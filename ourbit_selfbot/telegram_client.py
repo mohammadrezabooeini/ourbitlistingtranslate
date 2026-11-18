@@ -42,6 +42,11 @@ def should_notify_spot_user(
     return bool(notify_user) and listing_type == SPOT and not is_edit
 
 
+def should_ignore_untracked_edit(is_edit: bool, destination_message_id: int | None) -> bool:
+    """An edit may only update a post this bot already sent."""
+    return is_edit and destination_message_id is None
+
+
 def decide_send_mode(
     has_photo: bool,
     formatted: str,
@@ -121,7 +126,11 @@ class OurbitSelfBot:
         logger.info("Checking message...")
 
         existing = self.db.get(chat_id, message_id)
-        if not is_edit and existing and existing.destination_message_id is not None:
+        destination_message_id = existing.destination_message_id if existing else None
+        if should_ignore_untracked_edit(is_edit, destination_message_id):
+            logger.info("Edited message was never posted by this bot → Skip")
+            return
+        if not is_edit and destination_message_id is not None:
             logger.info("Duplicate → Skip")
             return
 

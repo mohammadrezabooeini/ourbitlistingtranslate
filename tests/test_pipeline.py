@@ -5,6 +5,7 @@ from ourbit_selfbot.formatter import format_delisting, format_listing
 from ourbit_selfbot.parser import parse_delisting, parse_listing
 from ourbit_selfbot.telegram_client import (
     decide_send_mode,
+    should_ignore_untracked_edit,
     should_notify_spot_user,
     source_has_attached_photo,
 )
@@ -93,3 +94,9 @@ def test_spot_notify_only_for_new_spot_listings():
     assert should_notify_spot_user("futures", is_edit=False, notify_user="@someone") is False
     assert should_notify_spot_user("delisting", is_edit=False, notify_user="@someone") is False
     assert should_notify_spot_user("spot", is_edit=False, notify_user=None) is False
+
+
+def test_untracked_edits_are_not_posted_as_new():
+    assert should_ignore_untracked_edit(is_edit=True, destination_message_id=None) is True
+    assert should_ignore_untracked_edit(is_edit=True, destination_message_id=1950) is False
+    assert should_ignore_untracked_edit(is_edit=False, destination_message_id=None) is False
