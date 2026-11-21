@@ -36,15 +36,20 @@ def source_has_attached_photo(message) -> bool:
 
 def should_notify_spot_user(
     listing_type: str | None,
-    is_edit: bool,
+    already_posted: bool,
     notify_user: str | int | None,
 ) -> bool:
-    return bool(notify_user) and listing_type == SPOT and not is_edit
+    return bool(notify_user) and listing_type == SPOT and not already_posted
 
 
-def should_ignore_untracked_edit(is_edit: bool, destination_message_id: int | None) -> bool:
-    """An edit may only update a post this bot already sent."""
-    return is_edit and destination_message_id is None
+def should_ignore_untracked_edit(is_edit: bool, previously_seen: bool) -> bool:
+    """Skip edits of messages this process never received as new.
+
+    A listing photo often arrives without its caption, then the caption is
+    edited in a few seconds. That first message is recorded, so the edit is
+    posted. A replay of old edits has no prior row and stays ignored.
+    """
+    return is_edit and not previously_seen
 
 
 def decide_send_mode(
@@ -127,8 +132,8 @@ class OurbitSelfBot:
 
         existing = self.db.get(chat_id, message_id)
         destination_message_id = existing.destination_message_id if existing else None
-        if should_ignore_untracked_edit(is_edit, destination_message_id):
-            logger.info("Edited message was never posted by this bot → Skip")
+        if should_ignore_untracked_edit(is_edit, previously_seen=existing is not None):
+            logger.info("Edited message was never seen as a new message → Skip")
             return
         if not is_edit and destination_message_id is not None:
             logger.info("Duplicate → Skip")
@@ -137,6 +142,8 @@ class OurbitSelfBot:
         listing = parse_listing(event.raw_text)
         delisting = None if listing is not None else parse_delisting(event.raw_text)
         if listing is None and delisting is None:
+            if not is_edit:
+                self.db.upsert(chat_id, message_id)
             logger.info("Ignored: Not an Ourbit listing or delisting")
             return
 
@@ -183,7 +190,11 @@ class OurbitSelfBot:
             destination_message_id=dest_id,
         )
         logger.info("Successfully sent announcement.")
-        if should_notify_spot_user(listing_type, is_edit, self.config.spot_notify_user):
+        if should_notify_spot_user(
+            listing_type,
+            already_posted=False,
+            notify_user=self.config.spot_notify_user,
+        ):
             await self._notify_spot_user(event, formatted, has_photo)
 
     async def _build_formatted_message(self, listing: ListingData) -> str:

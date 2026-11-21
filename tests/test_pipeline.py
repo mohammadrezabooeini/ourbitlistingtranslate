@@ -88,15 +88,15 @@ def test_photo_then_text_when_caption_is_too_long():
     assert decide_send_mode(has_photo=True, formatted=oversized) == "photo_then_text"
 
 
-def test_spot_notify_only_for_new_spot_listings():
-    assert should_notify_spot_user("spot", is_edit=False, notify_user="@someone") is True
-    assert should_notify_spot_user("spot", is_edit=True, notify_user="@someone") is False
-    assert should_notify_spot_user("futures", is_edit=False, notify_user="@someone") is False
-    assert should_notify_spot_user("delisting", is_edit=False, notify_user="@someone") is False
-    assert should_notify_spot_user("spot", is_edit=False, notify_user=None) is False
+def test_spot_notify_only_for_first_spot_post():
+    assert should_notify_spot_user("spot", already_posted=False, notify_user="@someone") is True
+    assert should_notify_spot_user("spot", already_posted=True, notify_user="@someone") is False
+    assert should_notify_spot_user("futures", already_posted=False, notify_user="@someone") is False
+    assert should_notify_spot_user("delisting", already_posted=False, notify_user="@someone") is False
+    assert should_notify_spot_user("spot", already_posted=False, notify_user=None) is False
 
 
 def test_untracked_edits_are_not_posted_as_new():
-    assert should_ignore_untracked_edit(is_edit=True, destination_message_id=None) is True
-    assert should_ignore_untracked_edit(is_edit=True, destination_message_id=1950) is False
-    assert should_ignore_untracked_edit(is_edit=False, destination_message_id=None) is False
+    assert should_ignore_untracked_edit(is_edit=True, previously_seen=False) is True
+    assert should_ignore_untracked_edit(is_edit=True, previously_seen=True) is False
+    assert should_ignore_untracked_edit(is_edit=False, previously_seen=False) is False
