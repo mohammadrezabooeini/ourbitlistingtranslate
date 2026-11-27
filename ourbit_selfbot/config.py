@@ -65,7 +65,7 @@ class Config:
     telegram_2fa_password: str | None = None
     translator: str = "groq"
     groq_api_key: str | None = None
-    groq_model: str = "qwen/qwen3.6-27b"
+    groq_model: str = "qwen/qwen3.8-27b"
     openai_api_key: str | None = None
     openai_model: str = "gpt-4o-mini"
     db_path: Path = field(default_factory=lambda: PROJECT_ROOT / "bot.db")
@@ -88,7 +88,7 @@ def load_config() -> Config:
     two_fa = os.getenv("TELEGRAM_2FA_PASSWORD", "").strip() or None
     translator = os.getenv("TRANSLATOR", "groq").strip().lower() or "groq"
     groq_key = os.getenv("GROQ_API_KEY", "").strip() or None
-    groq_model = os.getenv("GROQ_MODEL", "qwen/qwen3.6-27b").strip() or "qwen/qwen3.6-27b"
+    groq_model = os.getenv("GROQ_MODEL", "qwen/qwen3.8-27b").strip() or "qwen/qwen3.8-27b"
     openai_key = os.getenv("OPENAI_API_KEY", "").strip() or None
     spot_notify_raw = os.getenv("SPOT_NOTIFY_USER", "").strip()
     spot_notify_user = parse_peer(spot_notify_raw) if spot_notify_raw else None

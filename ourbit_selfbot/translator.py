@@ -24,14 +24,15 @@ OPENAI_URL = "https://api.openai.com/v1/chat/completions"
 GOOGLE_URL = "https://translate.googleapis.com/translate_a/single"
 MYMEMORY_URL = "https://api.mymemory.translated.net/get"
 
-DEFAULT_GROQ_MODEL = "qwen/qwen3.6-27b"
+DEFAULT_GROQ_MODEL = "qwen/qwen3.8-27b"
 GROQ_MODEL_FALLBACKS = (
-    "qwen/qwen3.6-27b",
+    "qwen/qwen3.8-27b",
     "openai/gpt-oss-120b",
     "openai/gpt-oss-20b",
 )
 DEPRECATED_GROQ_MODELS = {
-    "llama-3.3-70b-versatile": "qwen/qwen3.6-27b",
+    "qwen/qwen3.6-27b": "qwen/qwen3.8-27b",
+    "llama-3.3-70b-versatile": "qwen/qwen3.8-27b",
     "llama-3.1-8b-instant": "openai/gpt-oss-20b",
 }
 USER_AGENT = "Mozilla/5.0 (compatible; OurbitSelfBot/1.0)"
