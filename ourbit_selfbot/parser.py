@@ -17,7 +17,6 @@ DELISTING = "delisting"
 
 OURBIT_RE = re.compile(r"#?Ourbit", re.IGNORECASE)
 NEW_LISTING_RE = re.compile(r"\[\s*New\s+Listing\s*\]|New\s+Listing", re.IGNORECASE)
-SPOT_MARKET_RE = re.compile(r"Spot\s+Trading\s+Market", re.IGNORECASE)
 PERP_RE = re.compile(r"Perpetual\s+Futures", re.IGNORECASE)
 FUTURES_WORD_RE = re.compile(r"\bFutures\b", re.IGNORECASE)
 
@@ -158,7 +157,12 @@ def detect_listing_type(text: str) -> str | None:
 
 
 def _looks_like_spot(text: str) -> bool:
-    return bool(SPOT_MARKET_RE.search(text) and SPOT_TRADING_RE.search(text))
+    """Spot listings always carry a 'Trading for SYMBOL/USDT' time.
+
+    Older posts also say 'Spot Trading Market'. Innovation Zone posts do not,
+    so that phrase is not required.
+    """
+    return bool(SPOT_TRADING_RE.search(text))
 
 
 def _looks_like_futures(text: str) -> bool:
